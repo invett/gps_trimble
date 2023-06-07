@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch> 
+    <node name="gps_trimble" type="gps_publisher" pkg="gps_trimble" output="screen">
+        <param name="ip" type="string" value="192.168.254.12" />
+        <param name="port" type="int" value="5018" />
+        <remap from="/gps_trimble/trimble/gga" to="/trimble/gga" />
+        <remap from="/gps_trimble/trimble/navsat_fix" to="/trimble/fix" />
+    </node>
+</launch>
