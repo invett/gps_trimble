@@ -181,9 +181,8 @@ private:
             double utm_x, utm_y;
             std::string utm_zone;
             gps_common::LLtoUTM(lat_decimal, lng_decimal, utm_x, utm_y, utm_zone);
-            ROS_ERROR("UTM zone: %s", utm_zone.c_str());
-            navsat_message_utm.latitude = utm_y;
-            navsat_message_utm.longitude = utm_x;
+            navsat_message_utm.latitude = utm_x;
+            navsat_message_utm.longitude = utm_y;
             navsat_message_utm.altitude = altitud;
 
             switch (calidadPos)
