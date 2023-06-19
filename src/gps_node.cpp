@@ -17,6 +17,8 @@
 #include <netinet/ip.h>
 #include <sstream>
 
+#include <gps_common/conversions.h>
+
 #define MSG_SZ 100
 #define PCAP_TCP_SLL_HEADER 68
 #define PCAP_TCP_HEADER 66
@@ -29,6 +31,7 @@ public:
     ros::Timer timer_;
     ros::Publisher gga_pub_;
     ros::Publisher navsat_pub_;
+    ros::Publisher utm_pub_;
     int port;
     std::string ip;
 
@@ -44,6 +47,7 @@ public:
 
     // Crear el publicador para el mensaje de tipo NavSatFix
     navsat_pub_ = nh_.advertise<sensor_msgs::NavSatFix>("trimble/navsat_fix", 10);
+    utm_pub_ = nh_.advertise<sensor_msgs::NavSatFix>("trimble/navsat_fix_utm", 10);
 
     // Crear un temporizador para ejecutar el método de callback cada 0.5 segundos
     timer_ = nh_.createTimer(ros::Duration(0.5), &GpsPublisher::timerCallback, this,false);
@@ -54,6 +58,7 @@ private:
   {
     std_msgs::String gga_message;  // Mensaje de tipo String para la cadena GGA
     sensor_msgs::NavSatFix navsat_message;  // Mensaje de tipo NavSatFix para los datos GPS
+    sensor_msgs::NavSatFix navsat_message_utm;  // Mensaje de tipo NavSatFix para los datos GPS
 
     int sockFd;
     bool isGPSOpen = false;
@@ -172,6 +177,15 @@ private:
             navsat_message.longitude = lng_decimal;
             navsat_message.altitude = altitud;
 
+            // Northing easting
+            double utm_x, utm_y;
+            std::string utm_zone;
+            gps_common::LLtoUTM(lat_decimal, lng_decimal, utm_x, utm_y, utm_zone);
+            ROS_ERROR("UTM zone: %s", utm_zone.c_str());
+            navsat_message_utm.latitude = utm_y;
+            navsat_message_utm.longitude = utm_x;
+            navsat_message_utm.altitude = altitud;
+
             switch (calidadPos)
             {
               case 0:
@@ -195,6 +209,7 @@ private:
             }
 
             navsat_pub_.publish(navsat_message);  // Publicar el mensaje NavSatFix
+            utm_pub_.publish(navsat_message_utm);
           }
           catch (const std::exception& e)
           {
