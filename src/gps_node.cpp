@@ -130,6 +130,17 @@ private:
                 // 1 Fijación GPS
                 // 2 Ajuste DGPS
                 // 3 Corrección de PPS
+                // 4 RTK?? -- aniadido ruben
+
+
+//            0: Fix not valid
+//            1: GPS fix
+//            2: Differential GPS fix (DGNSS), SBAS, OmniSTAR VBS, Beacon, RTX in GVBS mode
+//            3: Not applicable
+//            4: RTK Fixed, xFill
+//            5: RTK Float, OmniSTAR XP/HP, Location RTK, RTX
+//            6: INS Dead reckoning
+
             // 7-Número de satélites utilizados (no se utiliza en este ejemplo).
             // 8-Precisión horizontal (no se utiliza en este ejemplo).
             // 9-Altitud sobre el nivel del mar.
@@ -172,9 +183,12 @@ private:
               case 2:
                 navsat_message.status.status = sensor_msgs::NavSatStatus::STATUS_SBAS_FIX;
                 break;
-              case 3:
-                navsat_message.status.status = sensor_msgs::NavSatStatus::STATUS_GBAS_FIX;
-                break;
+              case 4:
+                navsat_message.status.status = 4; //RTK
+              break;
+              case 5:
+                navsat_message.status.status = 5; // Float RTK
+              break;
               default:
                 navsat_message.status.status = sensor_msgs::NavSatStatus::STATUS_NO_FIX;
                 break;
