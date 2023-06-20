@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <sensor_msgs/NavSatFix.h>
+#include <geometry_msgs/Point.h>
 #include <string>
 #include <iostream>
 #include <sys/socket.h>
@@ -47,7 +48,7 @@ public:
 
     // Crear el publicador para el mensaje de tipo NavSatFix
     navsat_pub_ = nh_.advertise<sensor_msgs::NavSatFix>("trimble/navsat_fix", 10);
-    utm_pub_ = nh_.advertise<sensor_msgs::NavSatFix>("trimble/navsat_fix_utm", 10);
+    utm_pub_ = nh_.advertise<geometry_msgs::Point>("trimble/position", 10);
 
     // Crear un temporizador para ejecutar el método de callback cada 0.5 segundos
     timer_ = nh_.createTimer(ros::Duration(0.5), &GpsPublisher::timerCallback, this,false);
@@ -58,7 +59,7 @@ private:
   {
     std_msgs::String gga_message;  // Mensaje de tipo String para la cadena GGA
     sensor_msgs::NavSatFix navsat_message;  // Mensaje de tipo NavSatFix para los datos GPS
-    sensor_msgs::NavSatFix navsat_message_utm;  // Mensaje de tipo NavSatFix para los datos GPS
+    geometry_msgs::Point utm;  // Mensaje con xyz para los datos GPS
 
     int sockFd;
     bool isGPSOpen = false;
@@ -172,19 +173,9 @@ private:
                 lat_decimal *= -1.0;
             }
 
-
             navsat_message.latitude = lat_decimal;
             navsat_message.longitude = lng_decimal;
             navsat_message.altitude = altitud;
-
-            // Northing easting
-            double utm_x, utm_y;
-            std::string utm_zone;
-            gps_common::LLtoUTM(lat_decimal, lng_decimal, utm_x, utm_y, utm_zone);
-            ROS_ERROR("UTM zone: %s", utm_zone.c_str());
-            navsat_message_utm.latitude = utm_y;
-            navsat_message_utm.longitude = utm_x;
-            navsat_message_utm.altitude = altitud;
 
             switch (calidadPos)
             {
@@ -209,7 +200,16 @@ private:
             }
 
             navsat_pub_.publish(navsat_message);  // Publicar el mensaje NavSatFix
-            utm_pub_.publish(navsat_message_utm);
+
+            // Northing easting
+            double utm_n, utm_e, utm_z;
+            std::string utm_zone;
+            gps_common::LLtoUTM(lat_decimal, lng_decimal, utm_n, utm_e, utm_zone);
+            ROS_ERROR("UTM zone: %s", utm_zone.c_str());
+            utm.x = utm_e;
+            utm.y = utm_n;
+            utm.z = altitud;
+            utm_pub_.publish(utm);
           }
           catch (const std::exception& e)
           {
