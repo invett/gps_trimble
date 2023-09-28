@@ -199,6 +199,7 @@ private:
                 break;
             }
 
+            navsat_message.header.stamp = ros::Time::now();
             navsat_pub_.publish(navsat_message);  // Publicar el mensaje NavSatFix
 
             // Northing easting
