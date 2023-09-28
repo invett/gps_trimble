@@ -205,7 +205,7 @@ private:
             double utm_n, utm_e, utm_z;
             std::string utm_zone;
             gps_common::LLtoUTM(lat_decimal, lng_decimal, utm_n, utm_e, utm_zone);
-            ROS_ERROR("UTM zone: %s", utm_zone.c_str());
+            //ROS_ERROR("UTM zone: %s", utm_zone.c_str());
             utm.x = utm_e;
             utm.y = utm_n;
             utm.z = altitud;
